@@ -1,0 +1,23 @@
+# Dependencias y artefactos generados por Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Entornos de desarrollo
+.idea/
+*.iml
+.vscode/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
