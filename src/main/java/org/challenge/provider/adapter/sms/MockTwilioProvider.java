@@ -7,6 +7,7 @@ import org.challenge.exception.NotificationDeliveryException;
 import org.challenge.model.sms.SmsNotification;
 import org.challenge.notification.api.SendResult;
 import org.challenge.provider.NotificationProvider;
+import org.challenge.provider.adapter.SimulationDelays;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public final class MockTwilioProvider implements NotificationProvider<SmsNotific
     @Override
     public SendResult send(SmsNotification notification) {
         try {
+            SimulationDelays.simulateNetworkLatency(logger);
+
             logger.info(
                     "Simulating Twilio SMS to {}",
                     notification.recipient().value()

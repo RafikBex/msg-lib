@@ -7,6 +7,7 @@ import org.challenge.exception.NotificationDeliveryException;
 import org.challenge.model.email.EmailNotification;
 import org.challenge.notification.api.SendResult;
 import org.challenge.provider.NotificationProvider;
+import org.challenge.provider.adapter.SimulationDelays;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -35,6 +36,8 @@ public final class MockMailgunProvider implements NotificationProvider<EmailNoti
     @Override
     public SendResult send(EmailNotification notification) {
         try {
+            SimulationDelays.simulateNetworkLatency(logger);
+
             logger.info(
                     "Simulating Mailgun email to {}",
                     notification.recipient().value()

@@ -7,6 +7,7 @@ import org.challenge.exception.NotificationDeliveryException;
 import org.challenge.model.push.PushNotification;
 import org.challenge.notification.api.SendResult;
 import org.challenge.provider.NotificationProvider;
+import org.challenge.provider.adapter.SimulationDelays;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public final class MockFirebaseProvider implements NotificationProvider<PushNoti
     @Override
     public SendResult send(PushNotification notification) {
         try {
+            SimulationDelays.simulateNetworkLatency(logger);
+
             logger.info(
                     "Simulating Firebase push notification to {}",
                     notification.recipient().value()
