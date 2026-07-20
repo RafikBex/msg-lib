@@ -57,9 +57,8 @@ public final class Main {
     /**
      * Ejecuta envíos síncronos y asíncronos de ejemplo a través de los tres canales.
      *
-     * @param args argumentos de línea de comandos (no utilizados en este ejemplo)
      */
-    public static void main(String[] args) {
+    static void main() {
         /*
          * En una integración real, la aplicación consumidora puede obtener
          * estas credenciales de variables de entorno, un vault o cualquier
@@ -80,9 +79,6 @@ public final class Main {
          * Configuración común de reintentos.
          *
          * maxAttempts = 3:
-         * - Primer intento.
-         * - Primer reintento.
-         * - Segundo reintento.
          */
         RetryPolicy retryPolicy = RetryPolicy.exponentialBackoff(3, Duration.ofMillis(250), Duration.ofSeconds(2));
 
@@ -234,26 +230,59 @@ public final class Main {
     /**
      * Ejecuta envíos síncronos de ejemplo para email, SMS y push.
      *
+     * <p>Si un envío falla, se imprime el error y se continúa con el siguiente canal.</p>
+     *
      * @param notificationClient cliente configurado para enviar notificaciones
      */
     private static void executeSynchronousExamples(NotificationClient notificationClient) {
         logger.info("\n========== SYNCHRONOUS SENDS ==========\n");
 
         EmailNotification email = createEmailNotification();
-
         SmsNotification sms = createSmsNotification();
-
         PushNotification push = createPushNotification();
 
-        SendResult emailResult = notificationClient.send(email);
+        SendResult emailResult = sendSafely(notificationClient, email, "EMAIL");
+        SendResult smsResult = sendSafely(notificationClient, sms, "SMS");
+        SendResult pushResult = sendSafely(notificationClient, push, "PUSH");
 
-        SendResult smsResult = notificationClient.send(sms);
+        if (emailResult != null) {
+            printResult("EMAIL", emailResult);
+        }
 
-        SendResult pushResult = notificationClient.send(push);
+        if (smsResult != null) {
+            printResult("SMS", smsResult);
+        }
 
-        printResult("EMAIL", emailResult);
-        printResult("SMS", smsResult);
-        printResult("PUSH", pushResult);
+        if (pushResult != null) {
+            printResult("PUSH", pushResult);
+        }
+    }
+
+    /**
+     * Envía una notificación de forma síncrona y captura cualquier excepción.
+     *
+     * @param notificationClient cliente de notificaciones
+     * @param notification       notificación a enviar
+     * @param channel            nombre del canal, usado para el mensaje de error
+     * @param <N>                tipo de notificación
+     * @return resultado del envío, o {@code null} si falló
+     */
+    private static <N extends Notification> SendResult sendSafely(
+            NotificationClient notificationClient,
+            N notification,
+            String channel
+    ) {
+        try {
+            return notificationClient.send(notification);
+        } catch (Exception exception) {
+            logger.error(
+                    "Failed to send {} notification: {}",
+                    channel,
+                    exception.getMessage(),
+                    exception
+            );
+            return null;
+        }
     }
 
     /**

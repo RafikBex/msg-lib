@@ -101,6 +101,7 @@ src/main/java/org/challenge/
 ## Notas
 
 - Los proveedores actuales son simulados y no realizan llamadas de red reales.
+- Uno de los proveedores de email (`MockMailgunProvider`) simula un error de envío para demostrar la funcionalidad de reintentos.
 - El `Main` de ejemplo lee variables de entorno o usa valores simulados por defecto.
 - El envío en lote (`sendBatch`) es síncrono y secuencial en la implementación actual.
 - El proyecto se compila con `source` y `target` 25 y usa características como records, sealed interfaces y virtual threads.

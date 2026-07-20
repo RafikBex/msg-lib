@@ -41,18 +41,18 @@ public final class MockTwilioProvider implements NotificationProvider<SmsNotific
                     "Simulating Twilio SMS to {}",
                     notification.recipient().value()
             );
-
-            return SendResult.sent(
-                    notification.id(),
-                    providerName(),
-                    UUID.randomUUID().toString()
-            );
+            throw new RuntimeException("Simulated Fail Twilio SMS to " + notification.recipient().value());
+//            return SendResult.sent(
+//                    notification.id(),
+//                    providerName(),
+//                    UUID.randomUUID().toString()
+//            );
         } catch (RuntimeException exception) {
             throw new NotificationDeliveryException(
                     providerName(),
                     notification.id(),
                     "Could not send SMS",
-                    exception
+                    true
             );
         }
     }

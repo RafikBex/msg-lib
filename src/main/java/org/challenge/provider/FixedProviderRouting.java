@@ -15,6 +15,11 @@ public final class FixedProviderRouting<N extends Notification> implements Provi
         this.provider = Objects.requireNonNull(provider);
     }
 
+    /**
+     * Método que permite condicionar la busqueda de un proveedor
+     * @param notification
+     * @return
+     */
     @Override
     public NotificationProvider<N> selectProvider(N notification) {
         //TODO: la notificación no se utiliza para la selección; una estrategia real podría usar el contenido o metadatos.

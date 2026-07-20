@@ -1,6 +1,8 @@
 package org.challenge.decorator;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.challenge.decorator.retry.RetryPolicy;
 import org.challenge.decorator.retry.Sleeper;
 import org.challenge.decorator.retry.ThreadSleeper;
@@ -17,6 +19,8 @@ import java.util.Objects;
  * lanza una excepción reintentable.
  */
 public final class RetryingNotificationProvider<N extends Notification> extends NotificationProviderDecorator<N> {
+
+    private static final Logger logger = LogManager.getLogger(RetryingNotificationProvider.class);
 
     private final RetryPolicy retryPolicy;
     private final Sleeper sleeper;
@@ -41,21 +45,59 @@ public final class RetryingNotificationProvider<N extends Notification> extends 
         NotificationDeliveryException lastException = null;
 
         for (int attempt = 1; attempt <= retryPolicy.maxAttempts(); attempt++) {
+            logger.info(
+                    "[{}] Delivery attempt {} of {}",
+                    providerName(),
+                    attempt,
+                    retryPolicy.maxAttempts()
+            );
+
             try {
                 waitBeforeAttempt(attempt);
 
-                return delegate.send(notification);
+                SendResult result = delegate.send(notification);
+
+                logger.info(
+                        "[{}] Delivery succeeded on attempt {}",
+                        providerName(),
+                        attempt
+                );
+
+                return result;
 
             } catch (NotificationDeliveryException exception) {
                 lastException = exception;
 
                 if (!exception.isRetryable()) {
+                    logger.warn(
+                            "[{}] Non-retryable error on attempt {}: {}",
+                            providerName(),
+                            attempt,
+                            exception.getMessage()
+                    );
+
                     throw exception;
                 }
 
                 if (!retryPolicy.shouldRetryAfter(attempt)) {
+                    logger.error(
+                            "[{}] All {} delivery attempts exhausted",
+                            providerName(),
+                            retryPolicy.maxAttempts()
+                    );
+
                     throw exception;
                 }
+
+                Duration nextDelay = retryPolicy.delayBeforeAttempt(attempt + 1);
+
+                logger.warn(
+                        "[{}] Delivery attempt {} failed, retrying in {} ms: {}",
+                        providerName(),
+                        attempt,
+                        nextDelay.toMillis(),
+                        exception.getMessage()
+                );
             }
         }
 
